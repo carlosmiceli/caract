@@ -1,2 +1,1 @@
-# caract
-Creating my own Caract (React from scracth)
+# Caract (Carlos' React from scracth)
