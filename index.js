@@ -1,61 +1,73 @@
-// Define a function to create elements in your custom library
+// createElement: A fundamental function in Caract that creates a virtual DOM element.
+// - 'type': A string representing the HTML element type (e.g., 'div', 'span').
+// - 'props': An object containing properties and attributes for the element.
+// - '...children': Rest parameters capturing all the children elements passed.
 function createElement(type, props, ...children) {
     return {
         type,
         props: {
-            ...props,
+            ...props, // Spread syntax to copy all key-value pairs from 'props' into this new object.
+            // 'children' array is processed to handle text elements differently:
+            // If the child is an object (like another element), it's used as-is.
+            // If it's a string or number, it's converted into a text element.
             children: children.map(child =>
-                typeof child === "object"
-                    ? child
-                    : createTextElement(child)
+                typeof child === "object" ? child : createTextElement(child)
             ),
         },
-    }
+    };
 }
 
-// Define a function to create text elements in your custom library
+// createTextElement: Specialized function for creating text nodes.
+// - 'text': A string to be displayed as text in the UI.
 function createTextElement(text) {
     return {
-        type: "TEXT_ELEMENT",
+        type: "TEXT_ELEMENT", // Indicates this is a text node.
         props: {
-            nodeValue: text,
-            children: [],
+            nodeValue: text, // The actual text content to display.
+            children: [],    // Text nodes won't have child elements.
         },
-    }
+    };
 }
 
-// Define a function to render elements in the browser
+// render: Function to render elements to the actual DOM.
+// - 'element': The virtual DOM element to render.
+// - 'container': The DOM node where the element should be rendered.
+/**
+ * Renders a React element into a DOM container.
+ * @param {Object} element - The React element to render.
+ * @param {HTMLElement} container - The DOM container to render the element into.
+ * @returns {void}
+ */
 function render(element, container) {
-    // Create a new DOM node based on the type of the element
-    const dom =
-        element.type == "TEXT_ELEMENT"
-            ? document.createTextNode("")
-            : document.createElement(element.type)
+    // Create a DOM node based on the element type.
+    const dom = element.type === "TEXT_ELEMENT"
+        ? document.createTextNode("") // For text elements, create a text node.
+        : document.createElement(element.type); // For other types, create the respective element.
 
-    // Set any additional properties on the node based on the props of the element
-    const isProperty = key => key !== "children"
+    // Apply properties and attributes to the created node.
+    const isProperty = key => key !== "children";
     Object.keys(element.props)
         .filter(isProperty)
         .forEach(name => {
-            dom[name] = element.props[name]
-        })
+            dom[name] = element.props[name]; // Assign each property to the DOM node.
+        });
 
-    // Recursively render any child elements of the element
+    // Recursively render and append child elements.
     element.props.children.forEach(child =>
         render(child, dom)
-    )
+    );
 
-    // Append the new node to the container node
-    container.appendChild(dom)
+    // Append the newly created node to the container.
+    container.appendChild(dom);
 }
 
-// Define a custom library called Caract that includes the createElement and render functions
+// Caract Library: An object containing the core functionalities of the library.
 const Caract = {
     createElement,
     render,
-}
+};
 
-// Use the Caract.createElement function to create an element with JSX syntax
+// Usage Example:
 /** @jsx Caract.createElement */
 const element = (
     <div style="background: salmon">
@@ -64,6 +76,6 @@ const element = (
     </div>
 );
 
-// Get the container node and render the element into it using the Caract.render function
-const container = document.getElementById("root")
-Caract.render(element, container)
+// Rendering the created element into the 'root' DOM node.
+const container = document.getElementById("root");
+Caract.render(element, container);
